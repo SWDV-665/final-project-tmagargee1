@@ -1,0 +1,131 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Schedule
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="primary" (click)="switchSort()">{{sortByClass ? 'Sort by Time' : 'Sort by Class'}}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Tab 1</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-item-sliding *ngFor="let item of listItems">
+
+    <ion-item [style.background-color]="item.color" (click)="item.showDescription = !item.showDescription">
+      <p [style.opacity]="item.dto.isCompleted ? 0.67: 1">{{item.label}}</p>
+    </ion-item>
+    <div *ngIf="item.showDescription" [style.background-color]="item.color" style="padding-left: 2em;">
+      {{item.dto.description}}
+    </div>
+
+    <ion-item-options side="end">
+      <ion-item-option color="primary" (click)="editItem(item.dto)">Edit</ion-item-option>
+      <ion-item-option color="{{item.dto.isCompleted ? 'warning' : 'success'}}" (click)="flipCompletion(item.dto)">
+        {{item.dto.isCompleted ? 'Uncomplete' : 'Complete'}}</ion-item-option>
+    </ion-item-options>
+  </ion-item-sliding>
+
+  <ion-button [hidden]="!hasCompletedItems" color="danger" (click)="clearCompleted()">Clear Completed</ion-button>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button id="asssigment-form" (click)="newItem()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-modal>
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="cancel()">Cancel</ion-button>
+          </ion-buttons>
+          <ion-title>{{modalTitle}}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button [disabled]="!isValid()" (click)="confirm()" [strong]="true">Confirm</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-button *ngIf="isEditting" (click)="deleteAssignment()" color="danger">
+          Delete Assignment
+        </ion-button>
+
+        <ion-item>
+          <ion-label position="stacked">Assignment Name</ion-label>
+          <ion-input type="text" [(ngModel)]="formModel.name"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Description</ion-label>
+          <ion-textarea [(ngModel)]="formModel.description"></ion-textarea>
+        </ion-item>
+        <br>
+        <ion-item>
+          <ion-label>Select Class</ion-label>
+          <ion-select [(ngModel)]="formModel.categoryId" (ionChange)="setFormCategory()">
+            <div *ngFor="let cat of categories">
+              <ion-select-option value="{{cat._id}}">{{cat.name}}</ion-select-option>
+            </div>
+          </ion-select>
+        </ion-item>
+        <br>
+
+        <div *ngIf="formModel.category">
+          <ion-item>
+            <ion-checkbox slot="start" [(ngModel)]="formModel.isDueDateUncertain"></ion-checkbox>
+            <ion-label>Date is uncertain</ion-label>
+          </ion-item>
+
+
+          <ion-item *ngIf="formModel.isDueDateUncertain">
+            <ion-checkbox slot="start" [(ngModel)]="formModel.leaveDateBlank"></ion-checkbox>
+            <ion-label>No Guess</ion-label>
+          </ion-item>
+
+          <div *ngIf="!formModel.leaveDateBlank">
+            <ion-item>
+              <ion-datetime presentation="date" [(ngModel)]="this.formModel.dateString"></ion-datetime>
+            </ion-item>
+
+            <ion-list>
+              <ion-radio-group [(ngModel)]="formModel.timeChoice">
+                <ion-item>
+                  <ion-label>Class Default ({{getDefaultTime()}})</ion-label>
+                  <ion-radio slot="end" [value]="1"></ion-radio>
+                </ion-item>
+
+                <ion-item>
+                  <ion-label>End of Day</ion-label>
+                  <ion-radio slot="end" [value]="2"></ion-radio>
+                </ion-item>
+
+                <ion-item>
+                  <ion-label>Unknown</ion-label>
+                  <ion-radio slot="end" [value]="3"></ion-radio>
+                </ion-item>
+
+                <ion-item>
+                  <ion-label>Custom</ion-label>
+                  <ion-radio slot="end" [value]="4"></ion-radio>
+                </ion-item>
+              </ion-radio-group>
+            </ion-list>
+
+            <ion-item *ngIf="formModel.timeChoice == 4">
+              <ion-datetime presentation="time" [(ngModel)]="this.formModel.timeString"></ion-datetime>
+            </ion-item>
+          </div>
+
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>
